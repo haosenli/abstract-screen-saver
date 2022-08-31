@@ -1,0 +1,197 @@
+/* 
+ * EE371 22SP Lab 6 - animation.sv
+ * Authors: Haosen Li, Peter Tran
+ *
+ * Animation
+ *
+ * Top level module for line_drawer.sv and clear_screen.sv,
+ * creates an animation using the two modules.
+ * 
+ */
+module animation1(input  logic clk, reset,
+                 output logic done, color,
+                 output logic [10:0] x, y);
+
+    logic [25:0] delay_counter;
+    logic frame_counter; // tracks which frame to draw out
+    logic [2:0] lines_counter;
+    logic frame_complete, reset_start;
+    // inputs to submodules, manipulate these values
+    logic [10:0] x0, y0, x1, y1;
+    logic lines_start, clear_start;
+    // outputs from submodules, no need to manipulate
+    logic [10:0] lines_x, lines_y, clear_x, clear_y;
+    logic lines_done, clear_done;
+
+    // instantiate modules
+    line_drawer lines(.x(lines_x), .y(lines_y), .reset(lines_start), .done(lines_done), .*);
+    clear_screen clear(.x(clear_x), .y(clear_y), .reset(clear_start), .done(clear_done), .*);
+    trigger_fsm r_trigger(.in(reset), .out(reset_start), .*);
+
+    // x & y outputs depends on pixel color
+    assign x = (color == 1'd1) ? lines_x : clear_x;
+    assign y = (color == 1'd1) ? lines_y : clear_y;
+    // forever animate? time-based?
+    assign done = 1'd0;
+    
+    always_ff @(posedge clk) begin
+        // reset registers
+        if (reset) begin
+            frame_complete <= 1'd0;
+            delay_counter <= 26'd0;
+            frame_counter <= 1'd0;
+            lines_counter <= 3'd0; // edit this to include more lines
+            color <= 1'd0; // black
+            x0 <= 11'd0;
+            y0 <= 11'd0;
+            x1 <= 11'd0;
+            y1 <= 11'd0;
+        end
+        
+        if (reset_start) begin
+            lines_start <= 1'd1;
+            clear_start <= 1'd1;
+        end
+
+        // ensures the start signals are only on for one cycle
+        if (lines_start == 1'b1)
+            lines_start <= 1'b0;
+        if (clear_start == 1'b1)
+            clear_start <= 1'b0;
+
+        
+        /* === FRAMES PER SECOND CONTROL === */
+
+        if (~reset) begin
+            // frame delay logic
+            if (delay_counter == 26'd50000000) begin
+                // increment counters after delay
+                frame_counter <= frame_counter + 1'd1;
+                frame_complete <= 1'd0;
+                delay_counter <= 26'd0;
+                // clear drawing every 1 second
+                clear_start <= 1'd1;
+                color <= 1'd0; // black
+            end else
+                // increment delay counter
+                delay_counter <= delay_counter + 26'd1;
+        end
+
+
+        /* === ANIMATION FRAMES === */
+
+        // frame 1: rectangle
+        if (frame_counter == 1'd0 && ~frame_complete && clear_done && ~reset && ~clear_start) begin
+            // 4 lines: (100, 100) -> (100, 300) -> (300, 300) -> (300, 100) -> (100, 100)
+            color <= 1'd1; // white
+            /* === RECTANGLE === */
+            // line 1: (100, 100) -> (100, 300)
+            if (~lines_start && lines_counter == 3'd0 && lines_done) begin
+                x0 <= 11'd100;
+                y0 <= 11'd100;
+                x1 <= 11'd100;
+                y1 <= 11'd300;
+                lines_start <= 1'd1;
+                lines_counter <= lines_counter + 1'd1;
+            end 
+            // line 2: (100, 300) -> (300, 300)
+            if (~lines_start && lines_counter == 3'd1 && lines_done) begin
+                x0 <= 11'd100;
+                y0 <= 11'd300;
+                x1 <= 11'd300;
+                y1 <= 11'd300;
+                lines_start <= 1'd1;
+                lines_counter <= lines_counter + 1'd1;
+            end
+            // line 3: (300, 300) -> (300, 100)
+            if (~lines_start && lines_counter == 3'd2 && lines_done) begin
+                x0 <= 11'd300;
+                y0 <= 11'd300;
+                x1 <= 11'd300;
+                y1 <= 11'd100;
+                lines_start <= 1'd1;
+                lines_counter <= lines_counter + 1'd1;
+            end
+            // line 4: (300, 100) -> (100, 100)
+            if (~lines_start && lines_counter == 3'd3 && lines_done) begin
+                x0 <= 11'd300;
+                y0 <= 11'd100;
+                x1 <= 11'd100;
+                y1 <= 11'd100;
+                lines_start <= 1'd1;
+                // frame is complete
+                lines_counter <= 3'd0; // edit this later to change repeat behavior
+                frame_complete <= 1'd1;
+            end
+        end
+
+        // frame 2: tall triangle & wide triangle
+        else if (frame_counter == 1'd1 && ~frame_complete && clear_done && ~reset && ~clear_start) begin
+            // 6 lines: 
+            // thin triangle (upside-down): (100, 100) -> (150, 300) -> (200, 100) -> (100, 100)
+            // wide triangle:               (200, 300) -> (600, 300) -> (400, 100) -> (200, 300)
+            color <= 1'd1; // white
+
+            /* === THIN TRIANGLE === */
+            // line 1: (100, 100) -> (150, 300)
+            if (~lines_start && lines_counter == 3'd0 && lines_done) begin
+                x0 <= 11'd100;
+                y0 <= 11'd100;
+                x1 <= 11'd150;
+                y1 <= 11'd300;
+                lines_start <= 1'd1;
+                lines_counter <= lines_counter + 1'd1;
+            end
+            // line 2: (150, 300) -> (200, 100)
+            if (~lines_start && lines_counter == 3'd1 && lines_done) begin
+                x0 <= 11'd150;
+                y0 <= 11'd300;
+                x1 <= 11'd200;
+                y1 <= 11'd100;
+                lines_start <= 1'd1;
+                lines_counter <= lines_counter + 1'd1;
+            end
+            // line 3: (200, 100) -> (100, 100)
+            if (~lines_start && lines_counter == 3'd2 && lines_done) begin
+                x0 <= 11'd200;
+                y0 <= 11'd100;
+                x1 <= 11'd100;
+                y1 <= 11'd100;
+                lines_start <= 1'd1;
+                lines_counter <= lines_counter + 1'd1;
+            end 
+
+            /* === WIDE TRIANGLE == */
+            // line 1: (200, 300) -> (600, 300)
+            if (~lines_start && lines_counter == 3'd3 && lines_done) begin
+                x0 <= 11'd200;
+                y0 <= 11'd300;
+                x1 <= 11'd600;
+                y1 <= 11'd300;
+                lines_start <= 1'd1;
+                lines_counter <= lines_counter + 1'd1;
+            end
+            // line 2: (600, 300) -> (400, 100)
+            if (~lines_start && lines_counter == 3'd4 && lines_done) begin
+                x0 <= 11'd600;
+                y0 <= 11'd300;
+                x1 <= 11'd400;
+                y1 <= 11'd100;
+                lines_start <= 1'd1;
+                lines_counter <= lines_counter + 1'd1;
+            end
+            // line 3: (400, 100) -> (200, 300)
+            if (lines_start == 1'd0 && lines_counter == 3'd5 && lines_done) begin
+                x0 <= 11'd400;
+                y0 <= 11'd100;
+                x1 <= 11'd200;
+                y1 <= 11'd300;
+                lines_start <= 1'd1;
+                lines_counter <= lines_counter + 1'd1;
+                // frame is complete
+                lines_counter <= 3'd0; // edit this later to change repeat behavior
+                frame_complete <= 1'd1;
+            end 
+        end
+    end
+endmodule // animation
