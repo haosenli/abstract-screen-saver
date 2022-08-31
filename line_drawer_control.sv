@@ -1,8 +1,5 @@
 /* 
- * EE371 22SP Lab 5 - line_drawer_control.sv, May 18, 2022
- * Authors: Haosen Li, Peter Tran
- *
- * Task #2 -- Line-Drawing Algorithm, Control
+ * Line-Drawing Algorithm, Control
  *
  */
 module line_drawer_control(clk, reset, x0, y0, x1, y1, result_x, new_x0, new_x1, error, abs_x, abs_y,

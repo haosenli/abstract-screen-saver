@@ -1,7 +1,4 @@
-"""
-Haosen Li
-EE/CSE 371 Lab 6
-This file contains functions to generate .mif and .sv files.
+"""This file contains functions to generate .mif and .sv files.
 """
 from matplotlib import pyplot as plt
 from PIL import Image

@@ -1,7 +1,4 @@
 /* 
- * EE371 22SP Lab 6 - animation.sv
- * Authors: Haosen Li, Peter Tran
- *
  * Animation
  *
  * Top level module for line_drawer.sv and clear_screen.sv,

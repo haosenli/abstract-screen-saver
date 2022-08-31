@@ -1,7 +1,4 @@
 /* 
- * EE371 22SP Lab 5 - fancy_animation.sv, May 18, 2022
- * Authors: Haosen Li, Peter Tran
- *
  * Task #3 -- Animation
  *
  * Top level module for line_drawer.sv and clear_screen.sv,

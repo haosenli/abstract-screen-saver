@@ -1,7 +1,5 @@
 /* 
- * EE371 22SP Lab 6 - animation0_sound.sv
- * Authors: Haosen Li, Peter Tran
- *
+
  * Animation Sounds
  *
  * Top level module for animation0rom.v,

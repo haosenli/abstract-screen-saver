@@ -1,8 +1,5 @@
 /* 
- * EE371 22SP Lab 5 - line_drawer_datapath.sv, May 18, 2022
- * Authors: Haosen Li, Peter Tran
- *
- * Task #2 -- Line-Drawing Algorithm, Datapath
+ * Line-Drawing Algorithm, Datapath
  *
  */
 module line_drawer_datapath(input  logic clk, reset, done, swap_x_y, x0_gt_x1, swap_0_1, 
